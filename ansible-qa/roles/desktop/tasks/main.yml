@@ -1,0 +1,7 @@
+---
+- ansible.builtin.include_tasks: session.yml
+  tags: [desktop, session]
+- ansible.builtin.include_tasks: display.yml
+  tags: [desktop, display]
+- ansible.builtin.include_tasks: settings.yml
+  tags: [desktop, settings]

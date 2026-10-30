@@ -1,0 +1,27 @@
+---
+- name: Display manager
+  ansible.builtin.shell: systemctl is-active gdm gdm3 lightdm sddm 2>/dev/null | head -1; systemctl list-units --type=service --state=running | grep -iE 'gdm|lightdm|sddm|greetd' || true
+  register: dm
+  changed_when: false
+  failed_when: false
+
+- name: loginctl
+  ansible.builtin.command: loginctl
+  register: login
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.set_fact:
+    desk_sess_cases:
+      - id: DE-LOGIN-1
+        area: Desktop/Login
+        kasus: Ada jejak display manager atau session
+        ok: "{{ (dm.stdout | default('') | length) > 0 or (login.stdout | default('') | length) > 0 }}"
+        evidence: "{{ (dm.stdout ~ ' | ' ~ login.stdout) | regex_replace('\\n', '; ') | truncate(160) }}"
+      - id: DE-LOCK-1
+        area: Desktop/Lock Screen
+        kasus: SKIP — lock/logout/workspace = tes manual GUI
+        ok: true
+        evidence: "manual: Super+L, logout menu, workspace"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + desk_sess_cases }}"

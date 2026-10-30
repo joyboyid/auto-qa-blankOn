@@ -1,0 +1,13 @@
+---
+- ansible.builtin.shell: fc-list :lang=id 2>/dev/null | head -5; fc-list | grep -iE 'noto|java|bali|sunda|bugis|batak' | head -8 || true
+  register: fonts
+  changed_when: false
+- ansible.builtin.set_fact:
+    aks_cases:
+      - id: LO-AKS-1
+        area: Localization/Aksara Nusantara
+        kasus: Ada font Noto / aksara di fc-list (indikasi)
+        ok: "{{ (fonts.stdout | default('') | lower) is search('noto') or (fonts.stdout | default('') | length) > 0 }}"
+        evidence: "{{ fonts.stdout | default('(kosong)') | regex_replace('\\n', '; ') | truncate(160) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + aks_cases }}"

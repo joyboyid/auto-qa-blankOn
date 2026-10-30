@@ -1,0 +1,11 @@
+---
+- ansible.builtin.include_tasks: live_iso_boot.yml
+  tags: [installation, live]
+- ansible.builtin.include_tasks: uefi.yml
+  tags: [installation, uefi]
+- ansible.builtin.include_tasks: legacy.yml
+  tags: [installation, legacy]
+- ansible.builtin.include_tasks: partition.yml
+  tags: [installation, partition]
+- ansible.builtin.include_tasks: first_boot.yml
+  tags: [installation, firstboot]

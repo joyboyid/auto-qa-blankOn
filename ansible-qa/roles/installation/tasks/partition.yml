@@ -1,0 +1,20 @@
+---
+- name: Disk
+  ansible.builtin.command: lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT
+  register: lsblk
+  changed_when: false
+
+- ansible.builtin.set_fact:
+    inst_part_cases:
+      - id: IN-PART-1
+        area: Installation/Automatic Partition
+        kasus: "{{ skip_manual_install_leaves | default(true) | bool | ternary('SKIP otomatis (pasang partisi = tes manual)', 'Ada filesystem root') }}"
+        ok: "{{ skip_manual_install_leaves | default(true) | bool or (lsblk.stdout | default('')) is search('/') }}"
+        evidence: "{{ skip_manual_install_leaves | default(true) | bool | ternary('SKIP — kerjakan di VM: automatic partition', lsblk.stdout | regex_replace('\\n', '; ') | truncate(160)) }}"
+      - id: IN-PART-2
+        area: Installation/Manual Partition
+        kasus: SKIP default — manual partition tidak diotomasi Ansible
+        ok: "{{ skip_manual_install_leaves | default(true) | bool }}"
+        evidence: "checklist manual: EFI + root + swap opsional"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + inst_part_cases }}"

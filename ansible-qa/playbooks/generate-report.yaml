@@ -1,0 +1,28 @@
+---
+- name: Laporan Markdown dari JSON
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    results_file: /tmp/qa-results-localhost.json
+    out_file: "/tmp/laporan-peta-{{ jahitan | default('unknown') }}.md"
+  tasks:
+    - ansible.builtin.slurp:
+        src: "{{ results_file }}"
+      register: raw
+    - ansible.builtin.set_fact:
+        data: "{{ raw.content | b64decode | from_json }}"
+    - ansible.builtin.copy:
+        dest: "{{ out_file }}"
+        content: |
+          # Laporan peta QA BlankOn {{ jahitan | default('') }}
+
+          Host: {{ data.meta.hostname | default('?') }}
+          Kernel: {{ data.meta.kernel | default('?') }}
+          PASS {{ data.total_pass }} / FAIL {{ data.total_fail }} / Total {{ data.total_case }}
+
+          | ID | Area | Kasus | Hasil | Evidence |
+          |---|---|---|---|---|
+          {% for r in data.results -%}
+          | {{ r.id }} | {{ r.area }} | {{ r.kasus }} | {{ 'PASS' if r.ok else 'FAIL' }} | {{ r.evidence | replace('|','/') | truncate(90) }} |
+          {% endfor %}

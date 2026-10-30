@@ -1,0 +1,19 @@
+---
+- ansible.builtin.command: localectl
+  register: loc
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    loc_cases:
+      - id: LO-ID-1
+        area: Localization/Bahasa Indonesia
+        kasus: Locale mengandung id_ID atau bahasa=id
+        ok: "{{ (loc.stdout | default('') | lower) is search('id_id') or (loc.stdout | default('') | lower) is search('lang=id') }}"
+        evidence: "{{ loc.stdout | default('') | regex_replace('\\n', '; ') | truncate(160) }}"
+      - id: LO-LOC-1
+        area: Localization/Locale
+        kasus: localectl merespons
+        ok: "{{ (loc.rc | default(1) | int) == 0 }}"
+        evidence: "{{ loc.stdout | default(loc.stderr) | regex_replace('\\n', '; ') | truncate(120) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + loc_cases }}"

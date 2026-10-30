@@ -1,0 +1,10 @@
+---
+- ansible.builtin.set_fact:
+    inst_leg_cases:
+      - id: IN-LEG-1
+        area: Installation/Legacy BIOS Boot
+        kasus: Mode legacy (tidak ada /sys/firmware/efi)
+        ok: "{{ not (is_uefi | bool) }}"
+        evidence: "{{ is_uefi | ternary('mesin ini UEFI — leaf legacy tidak berlaku', 'legacy/BIOS') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + inst_leg_cases }}"

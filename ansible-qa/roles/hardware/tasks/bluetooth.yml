@@ -1,0 +1,23 @@
+---
+- ansible.builtin.command: rfkill list bluetooth
+  register: bt_rfkill
+  changed_when: false
+  failed_when: false
+- ansible.builtin.command: bluetoothctl show
+  register: bt_show
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    hw_bt_cases:
+      - id: HW-BT-1
+        area: Hardware/Bluetooth
+        kasus: Adapter terlihat
+        ok: "{{ (bt_rfkill.rc | default(1) | int) == 0 or (bt_show.rc | default(1) | int) == 0 }}"
+        evidence: "{{ (bt_rfkill.stdout or bt_show.stdout or bt_show.stderr) | regex_replace('\\n', '; ') | truncate(140) }}"
+      - id: HW-BT-2
+        area: Hardware/Bluetooth
+        kasus: Powered yes
+        ok: "{{ (bt_show.stdout | default('') | lower) is search('powered: yes') }}"
+        evidence: "{{ bt_show.stdout | default('') | regex_replace('\\n', '; ') | truncate(140) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_bt_cases }}"

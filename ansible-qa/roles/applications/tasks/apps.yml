@@ -1,0 +1,38 @@
+---
+- ansible.builtin.package_facts:
+    manager: auto
+
+- ansible.builtin.command: xdg-mime query default x-scheme-handler/http
+  register: mime_http
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.command: xdg-mime query default inode/directory
+  register: mime_fm
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.set_fact:
+    app_cases:
+      - id: AP-BR-1
+        area: Applications/Browser
+        kasus: firefox atau chromium terpasang
+        ok: "{{ 'firefox' in ansible_facts.packages or 'firefox-esr' in ansible_facts.packages or 'chromium' in ansible_facts.packages }}"
+        evidence: "http-handler={{ mime_http.stdout | default('?') | trim }}"
+      - id: AP-FM-1
+        area: Applications/File Manager
+        kasus: nautilus/nemo/thunar atau handler folder
+        ok: "{{ 'nautilus' in ansible_facts.packages or 'nemo' in ansible_facts.packages or 'thunar' in ansible_facts.packages or (mime_fm.stdout | default('') | length) > 0 }}"
+        evidence: "{{ mime_fm.stdout | default('?') | trim }}"
+      - id: AP-TERM-1
+        area: Applications/Terminal
+        kasus: gnome-terminal atau ptyxis atau kgx
+        ok: "{{ 'gnome-terminal' in ansible_facts.packages or 'ptyxis' in ansible_facts.packages or 'kgx' in ansible_facts.packages }}"
+        evidence: "cek paket terminal"
+      - id: AP-DEF-1
+        area: Applications/Default Applications
+        kasus: Ada default browser (xdg)
+        ok: "{{ (mime_http.stdout | default('') | length) > 0 }}"
+        evidence: "{{ mime_http.stdout | default('') | trim }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + app_cases }}"

@@ -1,0 +1,18 @@
+---
+- name: Display
+  ansible.builtin.shell: |
+    echo "WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"
+    echo "DISPLAY=${DISPLAY:-}"
+    (command -v gnome-shell >/dev/null && gnome-shell --version) || true
+  register: disp
+  changed_when: false
+
+- ansible.builtin.set_fact:
+    desk_disp_cases:
+      - id: DE-DISP-1
+        area: Desktop/Display
+        kasus: gnome-shell atau sesi grafis terdeteksi (boleh kosong di SSH murni)
+        ok: "{{ (disp.stdout | default('')) is search('GNOME') or (disp.stdout | default('')) is search('WAYLAND_DISPLAY=wayland') or (disp.stdout | default('')) is search('DISPLAY=:') }}"
+        evidence: "{{ disp.stdout | regex_replace('\\n', '; ') | truncate(160) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + desk_disp_cases }}"

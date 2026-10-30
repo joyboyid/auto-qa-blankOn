@@ -1,0 +1,16 @@
+---
+- name: Root terpasang
+  ansible.builtin.command: findmnt -n -o FSTYPE /
+  register: rootfs
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.set_fact:
+    inst_fb_cases:
+      - id: IN-FB-1
+        area: Installation/First Boot
+        kasus: Root filesystem ter-mount
+        ok: "{{ (rootfs.rc | default(1) | int) == 0 }}"
+        evidence: "{{ rootfs.stdout | default('?') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + inst_fb_cases }}"

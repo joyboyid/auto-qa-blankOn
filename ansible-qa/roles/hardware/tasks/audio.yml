@@ -1,0 +1,23 @@
+---
+- ansible.builtin.command: aplay -l
+  register: alsa
+  changed_when: false
+  failed_when: false
+- ansible.builtin.command: pactl list short sinks
+  register: sinks
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    hw_aud_cases:
+      - id: HW-AUD-1
+        area: Hardware/Audio
+        kasus: Kartu ALSA ada
+        ok: "{{ (alsa.stdout | default('')) is search('card') }}"
+        evidence: "{{ alsa.stdout | default(alsa.stderr) | regex_replace('\\n', '; ') | truncate(140) }}"
+      - id: HW-AUD-2
+        area: Hardware/Audio
+        kasus: Sink playback ada
+        ok: "{{ (sinks.stdout | default('') | length) > 0 }}"
+        evidence: "{{ sinks.stdout | default(sinks.stderr) | regex_replace('\\n', '; ') | truncate(140) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_aud_cases }}"

@@ -1,0 +1,9 @@
+---
+- ansible.builtin.include_tasks: apt.yml
+  tags: [system, apt]
+- ansible.builtin.include_tasks: repo.yml
+  tags: [system, repo]
+- ansible.builtin.include_tasks: systemd.yml
+  tags: [system, systemd]
+- ansible.builtin.include_tasks: power.yml
+  tags: [system, power]

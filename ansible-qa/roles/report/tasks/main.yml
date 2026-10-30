@@ -1,0 +1,23 @@
+---
+- name: Hitung
+  ansible.builtin.set_fact:
+    total_case: "{{ qa_results | default([]) | length }}"
+    total_pass: "{{ qa_results | default([]) | selectattr('ok') | list | length }}"
+    total_fail: "{{ qa_results | default([]) | rejectattr('ok') | list | length }}"
+    json_path: "/tmp/qa-results-{{ inventory_hostname }}.json"
+
+- name: Cetak kasus
+  ansible.builtin.debug:
+    msg: "{{ (item.ok | bool) | ternary('PASS', 'FAIL') }} [{{ item.id }}] {{ item.area }} / {{ item.kasus }} — {{ item.evidence }}"
+  loop: "{{ qa_results | default([]) }}"
+  loop_control:
+    label: "{{ item.id }}"
+
+- name: JSON
+  ansible.builtin.copy:
+    dest: "{{ json_path }}"
+    content: "{{ {'meta': qa_meta | default({}), 'results': qa_results | default([]), 'total_pass': total_pass | int, 'total_fail': total_fail | int, 'total_case': total_case | int} | to_nice_json }}"
+
+- name: Verdict
+  ansible.builtin.debug:
+    msg: "{{ 'LULUS' if (total_fail | int) == 0 else 'GAGAL' }} — {{ total_fail }} FAIL / {{ total_case }} kasus; {{ json_path }}"

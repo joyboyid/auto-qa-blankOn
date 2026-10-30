@@ -1,0 +1,14 @@
+---
+- ansible.builtin.command: systemctl is-system-running
+  register: sysr
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    sys_sd_cases:
+      - id: SY-SD-1
+        area: System/systemd
+        kasus: systemctl merespons (running/degraded boleh)
+        ok: "{{ (sysr.rc | default(1) | int) in [0, 1] and (sysr.stdout | default('') | length) > 0 }}"
+        evidence: "{{ sysr.stdout | default(sysr.stderr) | trim }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + sys_sd_cases }}"

@@ -1,0 +1,13 @@
+---
+- ansible.builtin.shell: ls -1 /dev/video* 2>/dev/null || true
+  register: video_dev
+  changed_when: false
+- ansible.builtin.set_fact:
+    hw_cam_cases:
+      - id: HW-CAM-1
+        area: Hardware/Webcam
+        kasus: /dev/video* ada
+        ok: "{{ (video_dev.stdout | default('') | length) > 0 }}"
+        evidence: "{{ video_dev.stdout | default('(tidak ada)') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_cam_cases }}"

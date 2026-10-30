@@ -1,0 +1,7 @@
+---
+- ansible.builtin.include_tasks: locale.yml
+  tags: [localization, locale]
+- ansible.builtin.include_tasks: timezone.yml
+  tags: [localization, timezone]
+- ansible.builtin.include_tasks: aksara.yml
+  tags: [localization, aksara]

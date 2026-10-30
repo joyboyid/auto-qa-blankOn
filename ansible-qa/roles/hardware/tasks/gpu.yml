@@ -1,0 +1,13 @@
+---
+- ansible.builtin.shell: lspci | grep -iE 'vga|3d|display' || true
+  register: gpu_pci
+  changed_when: false
+- ansible.builtin.set_fact:
+    hw_gpu_cases:
+      - id: HW-GPU-1
+        area: Hardware/GPU
+        kasus: VGA/3D di lspci
+        ok: "{{ (gpu_pci.stdout | default('') | length) > 0 }}"
+        evidence: "{{ gpu_pci.stdout | default('(tidak ada)') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_gpu_cases }}"

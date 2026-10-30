@@ -1,0 +1,14 @@
+---
+- ansible.builtin.command: libinput list-devices
+  register: libin
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    hw_tp_cases:
+      - id: HW-TP-1
+        area: Hardware/Touchpad
+        kasus: Touchpad di libinput
+        ok: "{{ (libin.stdout | default('') | lower) is search('touchpad') }}"
+        evidence: "{{ libin.stdout | default(libin.stderr) | regex_replace('\\n', '; ') | truncate(140) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_tp_cases }}"

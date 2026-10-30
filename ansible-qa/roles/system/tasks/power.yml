@@ -1,0 +1,19 @@
+---
+- ansible.builtin.command: systemctl list-unit-files suspend.target
+  register: sus
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    sys_pw_cases:
+      - id: SY-SUS-1
+        area: System/Suspend
+        kasus: Target suspend ada (tidak mengeksekusi suspend)
+        ok: "{{ (sus.stdout | default('') | lower) is search('suspend') }}"
+        evidence: "{{ sus.stdout | default('') | regex_replace('\\n', '; ') | truncate(120) }}"
+      - id: SY-OFF-1
+        area: System/Shutdown
+        kasus: SKIP — jangan matikan mesin dari playbook
+        ok: true
+        evidence: "manual: reboot/shutdown dari menu"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + sys_pw_cases }}"

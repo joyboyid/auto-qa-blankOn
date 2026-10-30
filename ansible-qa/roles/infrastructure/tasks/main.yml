@@ -1,0 +1,3 @@
+---
+- ansible.builtin.include_tasks: infra.yml
+  tags: [infrastructure]

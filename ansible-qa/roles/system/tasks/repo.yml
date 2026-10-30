@@ -1,0 +1,19 @@
+---
+- ansible.builtin.shell: |
+    cat /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null | grep -vE '^\s*(#|$)' || true
+  register: apt_src
+  changed_when: false
+- ansible.builtin.set_fact:
+    sys_repo_cases:
+      - id: SY-REPO-1
+        area: System/Repository
+        kasus: Sumber APT memuat blankonlinux
+        ok: "{{ (apt_src.stdout | default('') | lower) is search('blankonlinux') }}"
+        evidence: "{{ apt_src.stdout | default('') | regex_replace('\\n', '; ') | truncate(160) }}"
+      - id: SY-REPO-2
+        area: System/Repository
+        kasus: Tidak mengarah debian.org langsung
+        ok: "{{ (apt_src.stdout | default('') | lower) is not search('debian.org') }}"
+        evidence: "{{ ((apt_src.stdout | default('') | lower) is search('debian.org')) | ternary('ada debian.org', 'bersih') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + sys_repo_cases }}"

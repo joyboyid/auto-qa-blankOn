@@ -1,0 +1,24 @@
+---
+- ansible.builtin.command: timedatectl
+  register: tdc
+  changed_when: false
+- ansible.builtin.command: systemctl is-active systemd-timesyncd
+  register: tsync
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    tz_line: "{{ (tdc.stdout_lines | default([])) | select('search', 'Time zone:') | first | default('') }}"
+- ansible.builtin.set_fact:
+    tz_cases:
+      - id: LO-TZ-1
+        area: Localization/Timezone
+        kasus: "Zona mengandung {{ target_zone }}"
+        ok: "{{ target_zone in tz_line }}"
+        evidence: "{{ tz_line }}"
+      - id: LO-TZ-2
+        area: Localization/Timezone
+        kasus: systemd-timesyncd aktif
+        ok: "{{ (tsync.stdout | default('') | trim) == 'active' }}"
+        evidence: "{{ tsync.stdout | default('') | trim }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + tz_cases }}"

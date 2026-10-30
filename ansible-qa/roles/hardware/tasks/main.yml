@@ -1,0 +1,15 @@
+---
+- ansible.builtin.include_tasks: wifi.yml
+  tags: [hardware, wifi]
+- ansible.builtin.include_tasks: ethernet.yml
+  tags: [hardware, ethernet]
+- ansible.builtin.include_tasks: bluetooth.yml
+  tags: [hardware, bluetooth]
+- ansible.builtin.include_tasks: audio.yml
+  tags: [hardware, audio]
+- ansible.builtin.include_tasks: webcam.yml
+  tags: [hardware, webcam]
+- ansible.builtin.include_tasks: touchpad.yml
+  tags: [hardware, touchpad]
+- ansible.builtin.include_tasks: gpu.yml
+  tags: [hardware, gpu]

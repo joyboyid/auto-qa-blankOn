@@ -1,0 +1,13 @@
+---
+target_zone: "Asia/Makassar"
+target_lang: "id_ID.UTF-8"
+jahitan: "J2026xxx"
+iso: "blankon-live-image-amd64.hybrid.iso"
+
+# JANGAN namai results
+qa_results: []
+qa_meta: {}
+
+# Leaf yang tidak bisa diotomasi di guest biasa: skip (ok=true, evidence=SKIP)
+skip_manual_install_leaves: true
+skip_infra_leaves: true

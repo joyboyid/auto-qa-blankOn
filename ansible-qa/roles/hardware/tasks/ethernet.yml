@@ -1,0 +1,21 @@
+---
+- ansible.builtin.shell: ip -br link | grep -E '^(en|eth)' || true
+  register: eth_link
+  changed_when: false
+- ansible.builtin.command: ip -4 addr show
+  register: ip4
+  changed_when: false
+- ansible.builtin.set_fact:
+    hw_eth_cases:
+      - id: HW-ETH-1
+        area: Hardware/Ethernet
+        kasus: Interface ethernet ada
+        ok: "{{ (eth_link.stdout | default('') | length) > 0 }}"
+        evidence: "{{ eth_link.stdout | default('(tidak ada)') }}"
+      - id: HW-ETH-2
+        area: Hardware/Ethernet
+        kasus: Ada IPv4 LAN
+        ok: "{{ (ip4.stdout | default('')) is search('inet (10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)') }}"
+        evidence: "{{ ip4.stdout | default('') | regex_replace('\\n', '; ') | truncate(140) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_eth_cases }}"

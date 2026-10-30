@@ -1,0 +1,10 @@
+---
+- ansible.builtin.set_fact:
+    inst_uefi_cases:
+      - id: IN-UEFI-1
+        area: Installation/UEFI Boot
+        kasus: Firmware EFI terdeteksi (/sys/firmware/efi)
+        ok: "{{ is_uefi | bool }}"
+        evidence: "{{ is_uefi | ternary('EFI ada', 'bukan EFI / legacy') }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + inst_uefi_cases }}"

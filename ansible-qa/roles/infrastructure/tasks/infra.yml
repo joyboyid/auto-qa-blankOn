@@ -1,0 +1,37 @@
+---
+# Dijalankan di guest desktop biasanya SKIP.
+# Override: -e skip_infra_leaves=false di builder.
+- ansible.builtin.command: curl -fsI https://jahitan.blankonlinux.id/
+  register: jahitan_http
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.set_fact:
+    infra_cases:
+      - id: IF-ISO-1
+        area: Infrastructure/ISO Build
+        kasus: "{{ skip_infra_leaves | default(true) | bool | ternary('SKIP ISO build (bukan di builder)', 'Builder harus punya live-build') }}"
+        ok: "{{ skip_infra_leaves | default(true) | bool }}"
+        evidence: "manual di blankon-live-build / IRGSH"
+      - id: IF-PKG-1
+        area: Infrastructure/Package Build
+        kasus: SKIP package build di guest
+        ok: "{{ skip_infra_leaves | default(true) | bool }}"
+        evidence: "IRGSH submissions"
+      - id: IF-REPO-1
+        area: Infrastructure/Repository
+        kasus: Situs jahitan merespons
+        ok: "{{ (jahitan_http.rc | default(1) | int) == 0 }}"
+        evidence: "rc={{ jahitan_http.rc }}"
+      - id: IF-IRGSH-1
+        area: Infrastructure/IRGSH
+        kasus: SKIP cek IRGSH penuh
+        ok: "{{ skip_infra_leaves | default(true) | bool }}"
+        evidence: "http://irgsh.blankonlinux.id/submissions/"
+      - id: IF-REL-1
+        area: Infrastructure/Release Pipeline
+        kasus: SKIP pipeline
+        ok: "{{ skip_infra_leaves | default(true) | bool }}"
+        evidence: "manual: jahitan terbit + checksum"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + infra_cases }}"

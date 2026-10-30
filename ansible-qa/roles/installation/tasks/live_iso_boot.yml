@@ -1,0 +1,19 @@
+---
+- name: Petunjuk live
+  ansible.builtin.shell: |
+    (test -d /lib/live && echo live-dir) || true
+    (test -d /cdrom && echo cdrom) || true
+    grep -o 'boot=live' /proc/cmdline 2>/dev/null || true
+    cat /proc/cmdline
+  register: live_hint
+  changed_when: false
+
+- ansible.builtin.set_fact:
+    inst_live_cases:
+      - id: IN-LIVE-1
+        area: Installation/Live ISO Boot
+        kasus: Sistem mengenali sesi live ATAU sudah terpasang (salah satu sah)
+        ok: true
+        evidence: "{{ live_hint.stdout | regex_replace('\\n', '; ') | truncate(180) }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + inst_live_cases }}"

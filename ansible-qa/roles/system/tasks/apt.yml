@@ -1,0 +1,20 @@
+---
+- ansible.builtin.command: apt-get update
+  register: apt_upd
+  changed_when: false
+  failed_when: false
+  become: true
+- ansible.builtin.set_fact:
+    sys_apt_cases:
+      - id: SY-APT-1
+        area: System/APT
+        kasus: apt-get update rc=0
+        ok: "{{ (apt_upd.rc | default(1) | int) == 0 }}"
+        evidence: "rc={{ apt_upd.rc }}"
+      - id: SY-UPG-1
+        area: System/Upgrade
+        kasus: SKIP dist-upgrade (merusak SUT) — cek manual
+        ok: true
+        evidence: "manual: apt list --upgradable"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + sys_apt_cases }}"

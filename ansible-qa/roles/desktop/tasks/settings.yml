@@ -1,0 +1,16 @@
+---
+- name: gnome-control-center
+  ansible.builtin.command: bash -lc "command -v gnome-control-center"
+  register: gcc
+  changed_when: false
+  failed_when: false
+
+- ansible.builtin.set_fact:
+    desk_set_cases:
+      - id: DE-SET-1
+        area: Desktop/Settings
+        kasus: gnome-control-center terpasang
+        ok: "{{ gcc.rc | default(1) | int == 0 }}"
+        evidence: "{{ gcc.stdout | default(gcc.stderr) | trim }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + desk_set_cases }}"

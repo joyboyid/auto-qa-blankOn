@@ -1,0 +1,22 @@
+---
+- ansible.builtin.shell: iw dev 2>/dev/null || iwconfig 2>/dev/null || true
+  register: wifi_dev
+  changed_when: false
+- ansible.builtin.command: nmcli radio wifi
+  register: wifi_radio
+  changed_when: false
+  failed_when: false
+- ansible.builtin.set_fact:
+    hw_wifi_cases:
+      - id: HW-WIFI-1
+        area: Hardware/Wi-Fi
+        kasus: Interface wireless terdeteksi
+        ok: "{{ (wifi_dev.stdout | default('') | lower) is search('ieee 802.11') or (wifi_dev.stdout | default('') | lower) is search('wlan') or (wifi_dev.stdout | default('') | lower) is search('wlp') }}"
+        evidence: "{{ wifi_dev.stdout | default('') | regex_replace('\\n', '; ') | truncate(160) }}"
+      - id: HW-WIFI-2
+        area: Hardware/Wi-Fi
+        kasus: Radio Wi-Fi enabled
+        ok: "{{ (wifi_radio.stdout | default('') | trim | lower) == 'enabled' }}"
+        evidence: "{{ wifi_radio.stdout | default(wifi_radio.stderr) | trim }}"
+- ansible.builtin.set_fact:
+    qa_results: "{{ (qa_results | default([])) + hw_wifi_cases }}"

@@ -1,0 +1,34 @@
+---
+- name: Kernel
+  ansible.builtin.command: uname -r
+  register: kernel
+  changed_when: false
+
+- name: Hostname
+  ansible.builtin.command: hostname
+  register: host
+  changed_when: false
+
+- name: Live atau terpasang
+  ansible.builtin.stat:
+    path: /usr/lib/live
+  register: live_marker
+
+- name: EFI firmware
+  ansible.builtin.stat:
+    path: /sys/firmware/efi
+  register: efi_dir
+
+- name: Meta
+  ansible.builtin.set_fact:
+    is_live: "{{ live_marker.stat.exists | default(false) }}"
+    is_uefi: "{{ efi_dir.stat.exists | default(false) }}"
+    qa_results: "{{ qa_results | default([]) }}"
+    qa_meta:
+      jahitan: "{{ jahitan }}"
+      iso: "{{ iso }}"
+      hostname: "{{ host.stdout }}"
+      kernel: "{{ kernel.stdout }}"
+      target_zone: "{{ target_zone }}"
+      live: "{{ live_marker.stat.exists | default(false) }}"
+      uefi: "{{ efi_dir.stat.exists | default(false) }}"

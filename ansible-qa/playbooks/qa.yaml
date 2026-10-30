@@ -1,0 +1,15 @@
+---
+# Peta: docs/map-feature.md
+- name: QA BlankOn — peta fitur
+  hosts: blankon
+  gather_facts: true
+  roles:
+    - { role: base, tags: [base, always] }
+    - { role: installation, tags: [installation] }
+    - { role: desktop, tags: [desktop] }
+    - { role: hardware, tags: [hardware] }
+    - { role: system, tags: [system] }
+    - { role: localization, tags: [localization] }
+    - { role: applications, tags: [applications] }
+    - { role: infrastructure, tags: [infrastructure] }
+    - { role: report, tags: [report, always] }
