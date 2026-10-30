@@ -1,0 +1,48 @@
+---
+- name: Buat Anekdot 3 Paragraf dan Export ke PDF
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    output_dir: "{{ ansible_env.HOME }}/Documents"
+    odt_file: "{{ output_dir }}/anekdot_blankon.odt"
+    pdf_file: "{{ output_dir }}/anekdot_blankon.pdf"
+    anekdot: |
+      Suatu hari di warung kopi dekat kampus, ada mahasiswa informatika yang sedang mengeluh.
+
+      "Pak, saya sudah belajar coding seharian, tapi programnya tetap error terus," kata mahasiswa itu sambil menyeruput kopi.
+
+      Tukang warung yang kebetulan pernah ikut kursus komputer menjawab santai, "Anak muda, error itu bukan musuh. Dia hanya sedang mengajari kamu dengan cara yang agak kasar."
+
+  tasks:
+    - name: Pastikan folder Documents ada
+      ansible.builtin.file:
+        path: "{{ output_dir }}"
+        state: directory
+
+    - name: Buat file teks anekdot
+      ansible.builtin.copy:
+        content: "{{ anekdot }}"
+        dest: "{{ output_dir }}/anekdot.txt"
+
+    - name: Convert teks menjadi PDF pakai LibreOffice headless
+      ansible.builtin.command:
+        cmd: >
+          soffice --headless --convert-to pdf
+          --outdir {{ output_dir }}
+          {{ output_dir }}/anekdot.txt
+      args:
+        creates: "{{ pdf_file }}"
+
+    - name: Cek apakah PDF berhasil dibuat
+      ansible.builtin.stat:
+        path: "{{ pdf_file }}"
+      register: hasil_pdf
+
+    - name: Tampilkan hasil
+      ansible.builtin.debug:
+        msg: |
+          PDF berhasil dibuat!
+          Lokasi : {{ pdf_file }}
+          Ukuran : {{ hasil_pdf.stat.size }} bytes
+      when: hasil_pdf.stat.exists
